@@ -2,7 +2,8 @@ from dataclasses import dataclass
 from typing import Dict, Union, Callable, Type, List
 
 
-@dataclass(init=True)
+@dataclass(init=True, repr=False, eq=False, order=False,
+           unsafe_hash=False, frozen=False)
 class InfoMessage:
     """Информационное сообщение о тренировке."""
 
@@ -51,19 +52,16 @@ class Training:
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий."""
         raise NotImplementedError(
-            'Определите метод get_spent_calories в %s.'
-            % self.__class__.__name__)
+            f'Определите метод get_spent_calories'
+            f' в {self.__class__.__name__}.')
 
     def show_training_info(self) -> InfoMessage:
         """Вернуть информационное сообщение о выполненной тренировке."""
-        distance = self.get_distance()
-        speed = self.get_mean_speed()
-        calories = self.get_spent_calories()
         info_message_obj = InfoMessage(self.__class__.__name__,
                                        self.duration,
-                                       distance,
-                                       speed,
-                                       calories, )
+                                       self.get_distance(),
+                                       self.get_mean_speed(),
+                                       self.get_spent_calories())
         return info_message_obj
 
 
@@ -79,7 +77,7 @@ class Swimming(Training):
                  duration: float,
                  weight: float,
                  length_pool: float,
-                 count_pool: float, ):
+                 count_pool: float) -> None:
         super().__init__(action, duration, weight)
         self.length_pool = length_pool
         self.count_pool = count_pool
@@ -106,8 +104,8 @@ class Running(Training):
     def get_spent_calories(self) -> float:
         """Подсчет калорий для бега."""
         calories = ((self.RUN_CALORIE_COEFF_1
-                    * self.get_mean_speed()
-                    - self.RUN_CALORIE_COEFF_2)
+                     * self.get_mean_speed()
+                     - self.RUN_CALORIE_COEFF_2)
                     * self.weight / self.M_IN_KM
                     * self.duration * self.HOUR_TO_MINUTE)
         return calories
@@ -123,7 +121,7 @@ class SportsWalking(Training):
                  action: int,
                  duration: float,
                  weight: float,
-                 height: float):
+                 height: float) -> None:
         super().__init__(action, duration, weight)
         self.height = height
 
@@ -136,13 +134,20 @@ class SportsWalking(Training):
         return calories
 
 
-def read_package(workout_type: str, data: List[Union[int, float]]) -> Training:
+def read_package(workout_type: str, data: List[Union[int, float]]) -> Union[Training, None]:
     """Прочитать данные полученные от датчиков."""
-    dictionary_type = (Dict[str,
-                            (Callable[[Type[Union[Swimming,
-                                                  Running,
-                                                  SportsWalking]]],
-                                      None])])
+    dictionary_type = (Dict[str, (Callable[[Type[Training]], None])])
+    # Если делать анотацию попроще как ты сказал в ревью пайчарм
+    # выводит ошибку подсвеченную желтым что означает что типы
+    # несоответсвуют тому что есть, как я понимаю значения
+    # данного словаря это не объекты класса training
+    # а какие то абстрактные классы для этого
+    # я в аннотации и указал ключевое слово Type
+    # максимум как я мог сократить это так
+    # так как они типа training, а None в
+    # анотации означает что объект Callable
+    # должен возвращать None
+    # что и происходит
     choose: dictionary_type = {
         'SWM': Swimming,
         'RUN': Running,
@@ -166,5 +171,8 @@ if __name__ == '__main__':
     ]
 
     for workout_type, data in packages:
-        training = read_package(workout_type, data)
-        main(training)
+        try:
+            training = read_package(workout_type, data)
+            main(training)
+        except ValueError:
+            print(f'Запрошенный тип тренировки {workout_type} не найден!')
