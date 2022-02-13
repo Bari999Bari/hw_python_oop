@@ -134,15 +134,16 @@ class SportsWalking(Training):
         return calories
 
 
-def read_package(workout_type: str, data: List[Union[int, float]]) -> Union[Training, None]:
+def read_package(workout_type: str,
+                 data: List[Union[int, float]]
+                 ) -> Union[Training, None]:
     """Прочитать данные полученные от датчиков."""
-    dictionary_type = (Dict[str, (Callable[[Type[Training]], None])])
+    dictionary_type = (Dict[str, (Callable[[Training], None])])
     # Если делать анотацию попроще как ты сказал в ревью пайчарм
     # выводит ошибку подсвеченную желтым что означает что типы
     # несоответсвуют тому что есть, как я понимаю значения
     # данного словаря это не объекты класса training
     # а какие то абстрактные классы для этого
-    # я в аннотации и указал ключевое слово Type
     # максимум как я мог сократить это так
     # так как они типа training, а None в
     # анотации означает что объект Callable
