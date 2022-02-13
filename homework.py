@@ -105,8 +105,11 @@ class Running(Training):
 
     def get_spent_calories(self) -> float:
         """Подсчет калорий для бега."""
-        calories = ((self.RUN_CALORIE_COEFF_1 * self.get_mean_speed() - self.RUN_CALORIE_COEFF_2)
-                    * self.weight / self.M_IN_KM * self.duration * self.HOUR_TO_MINUTE)
+        calories = ((self.RUN_CALORIE_COEFF_1
+                    * self.get_mean_speed()
+                    - self.RUN_CALORIE_COEFF_2)
+                    * self.weight / self.M_IN_KM
+                    * self.duration * self.HOUR_TO_MINUTE)
         return calories
 
 
@@ -135,7 +138,11 @@ class SportsWalking(Training):
 
 def read_package(workout_type: str, data: List[Union[int, float]]) -> Training:
     """Прочитать данные полученные от датчиков."""
-    dictionary_type = Dict[str, (Callable[[Type[Union[Swimming, Running, SportsWalking]]], None])]
+    dictionary_type = (Dict[str,
+                            (Callable[[Type[Union[Swimming,
+                                                  Running,
+                                                  SportsWalking]]],
+                                      None])])
     choose: dictionary_type = {
         'SWM': Swimming,
         'RUN': Running,
