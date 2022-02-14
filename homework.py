@@ -2,8 +2,7 @@ from dataclasses import dataclass
 from typing import Dict, Union, Callable, List
 
 
-@dataclass(init=True, repr=False, eq=False, order=False,
-           unsafe_hash=False, frozen=False)
+@dataclass(repr=False, eq=False)
 class InfoMessage:
     """Информационное сообщение о тренировке."""
 
@@ -15,11 +14,11 @@ class InfoMessage:
 
     def get_message(self) -> str:
         """Формирует и возращает информационную переменную строкового типа."""
-        message = (f'Тип тренировки: {self.training_type};'
-                   f' Длительность: {self.duration:.3f} ч.;'
-                   f' Дистанция: {self.distance:.3f} км;'
-                   f' Ср. скорость: {self.speed:.3f} км/ч;'
-                   f' Потрачено ккал: {self.calories:.3f}.')
+        message: str = (f'Тип тренировки: {self.training_type};'
+                        f' Длительность: {self.duration:.3f} ч.;'
+                        f' Дистанция: {self.distance:.3f} км;'
+                        f' Ср. скорость: {self.speed:.3f} км/ч;'
+                        f' Потрачено ккал: {self.calories:.3f}.')
         return message
 
 
@@ -57,11 +56,11 @@ class Training:
 
     def show_training_info(self) -> InfoMessage:
         """Вернуть информационное сообщение о выполненной тренировке."""
-        info_message_obj = InfoMessage(self.__class__.__name__,
-                                       self.duration,
-                                       self.get_distance(),
-                                       self.get_mean_speed(),
-                                       self.get_spent_calories())
+        info_message_obj: InfoMessage = InfoMessage(self.__class__.__name__,
+                                                    self.duration,
+                                                    self.get_distance(),
+                                                    self.get_mean_speed(),
+                                                    self.get_spent_calories())
         return info_message_obj
 
 
@@ -103,11 +102,11 @@ class Running(Training):
 
     def get_spent_calories(self) -> float:
         """Подсчет калорий для бега."""
-        calories = ((self.RUN_CALORIE_COEFF_1
-                     * self.get_mean_speed()
-                     - self.RUN_CALORIE_COEFF_2)
-                    * self.weight / self.M_IN_KM
-                    * self.duration * self.HOUR_TO_MINUTE)
+        calories: float = ((self.RUN_CALORIE_COEFF_1
+                            * self.get_mean_speed()
+                            - self.RUN_CALORIE_COEFF_2)
+                           * self.weight / self.M_IN_KM
+                           * self.duration * self.HOUR_TO_MINUTE)
         return calories
 
 
@@ -127,10 +126,10 @@ class SportsWalking(Training):
 
     def get_spent_calories(self) -> float:
         """Подсчет калорий для спортивной ходьбы."""
-        calories = ((self.WALK_CALORIE_COEFF_1 * self.weight
-                     + (self.get_mean_speed() ** 2 // self.height)
-                     * self.WALK_CALORIE_COEFF_2 * self.weight)
-                    * self.duration * self.HOUR_TO_MINUTE)
+        calories: float = ((self.WALK_CALORIE_COEFF_1 * self.weight
+                           + (self.get_mean_speed() ** 2 // self.height)
+                           * self.WALK_CALORIE_COEFF_2 * self.weight)
+                           * self.duration * self.HOUR_TO_MINUTE)
         return calories
 
 
@@ -139,22 +138,12 @@ def read_package(workout_type: str,
                  ) -> Union[Training, None]:
     """Прочитать данные полученные от датчиков."""
     dictionary_type = (Dict[str, (Callable[[Training], None])])
-    # Если делать анотацию попроще как ты сказал в ревью пайчарм
-    # выводит ошибку подсвеченную желтым что означает что типы
-    # несоответсвуют тому что есть, как я понимаю значения
-    # данного словаря это не объекты класса training
-    # а какие то абстрактные классы для этого
-    # максимум как я мог сократить это так
-    # так как они типа training, а None в
-    # анотации означает что объект Callable
-    # должен возвращать None
-    # что и происходит
     choose: dictionary_type = {
         'SWM': Swimming,
         'RUN': Running,
         'WLK': SportsWalking,
     }
-    current_training = choose.get(workout_type)(*data)
+    current_training: Training = choose.get(workout_type)(*data)
     return current_training
 
 
